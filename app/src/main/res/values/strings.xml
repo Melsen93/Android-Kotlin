@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">AndroidOnKotlin</string>
-    <string name="button_text">Button</string>
-    <string name="text_view_text">Hello World!</string>
-    <string name="text_view_kotlin_text">Hello Kotlin!</string>
+    <string name="temperature_label">Temperature</string>
+    <string name="feels_like_label">Feels like</string>
+    <string name="city_coordinates">lat = %s, lon = %s"</string>
+    <string name="error">Error</string>
+    <string name="reload">Reload</string>
 </resources>
