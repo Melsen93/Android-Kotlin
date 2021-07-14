@@ -5,15 +5,14 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class Weather(
-    val city: City = getDefaultCity(),
-    val temperature: Int = 0,
-    val feelsLike: Int = 0
+        val city: City = getDefaultCity(),
+        val temperature: Int = 0,
+        val feelsLike: Int = 0
 ) : Parcelable
 
 fun getDefaultCity() = City(cityName = "Хабаровск", lat = 48.4827, lon = 135.084)
 
-fun getRussianCities(): List<Weather> {
-    return listOf(
+fun getRussianCities() = listOf(
         Weather(City("Москва", 55.755826, 37.617299900000035), 1, 1),
         Weather(City("Санкт-Петербург", 59.9342802, 30.335098600000038), 2, 2),
         Weather(City("Новосибирск", 55.00835259999999, 82.93573270000002), 3, 3),
@@ -24,11 +23,9 @@ fun getRussianCities(): List<Weather> {
         Weather(City("Омск", 54.9884804, 73.32423610000001), 8, 8),
         Weather(City("Ростов-на-Дону", 47.2357137, 39.701505), 9, 9),
         Weather(City("Хабаровск", 48.4827, 135.084), 10, 10)
-    )
-}
+)
 
-fun getWorldCities(): List<Weather> {
-    return listOf(
+fun getWorldCities() = listOf(
         Weather(City("Лондон", 51.5085300, -0.1257400), 11, 1),
         Weather(City("Токио", 35.6895000, 139.6917100), 12, 2),
         Weather(City("Париж", 48.8534100, 2.3488000), 13, 3),
@@ -39,5 +36,7 @@ fun getWorldCities(): List<Weather> {
         Weather(City("Вашингтон", 38.9071923, -77.03687070000001), 18, 8),
         Weather(City("Киев", 50.4501, 30.523400000000038), 19, 9),
         Weather(City("Пекин", 39.90419989999999, 116.40739630000007), 20, 10)
-    )
-}
+)
+
+
+
