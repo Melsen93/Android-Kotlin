@@ -1,5 +1,6 @@
 package com.example.androidonkotlin.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.androidonkotlin.model.Repository
@@ -11,17 +12,24 @@ class MainViewModel(
     private val repositoryImpl: Repository = RepositoryImpl()
 ) : ViewModel() {
 
-    fun getLiveData() = liveDataToObserve
+    fun getLiveData(): LiveData<AppState> = liveDataToObserve
 
-    fun getWeatherFromLocalSource() = getDataFromLocalSource()
+    fun getWeatherFromLocalSourceRus() = getDataFromLocalSource(isRussian = true)
 
-    fun getWeatherFromRemoteSource() = getDataFromLocalSource()
+    fun getWeatherFromLocalSourceWorld() = getDataFromLocalSource(isRussian = false)
 
-    private fun getDataFromLocalSource() {
+    fun getWeatherFromRemoteSource() = getDataFromLocalSource(isRussian = true)
+
+    fun getDataFromLocalSource(isRussian: Boolean) {
         liveDataToObserve.value = AppState.Loading
         Thread {
-            sleep(1500)
-            liveDataToObserve.postValue(AppState.Success(repositoryImpl.getWeatherFromLocalStorage()))
+            sleep(1000)
+            liveDataToObserve.postValue(
+                AppState.Success(
+                    if (isRussian) repositoryImpl.getWeatherFromLocalStorageRus()
+                    else repositoryImpl.getWeatherFromLocalStorageWorld()
+                )
+            )
         }.start()
     }
 }
