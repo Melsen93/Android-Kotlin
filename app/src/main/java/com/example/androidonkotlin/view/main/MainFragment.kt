@@ -91,6 +91,11 @@ class MainFragment : Fragment() {
         fun newInstance() = MainFragment()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     interface OnItemViewClickListener {
         fun onItemViewClick(weather: Weather)
     }
