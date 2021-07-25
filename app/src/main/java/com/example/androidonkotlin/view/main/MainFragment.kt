@@ -28,20 +28,18 @@ class MainFragment : Fragment() {
         override fun onItemViewClick(weather: Weather) {
             activity?.supportFragmentManager?.apply {
                 beginTransaction()
-                    .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
-                        putParcelable(DetailsFragment.BUNDLE_EXTRA, weather)
-                    }))
-                    .addToBackStack("")
-                    .commitAllowingStateLoss()
+                        .add(R.id.container, DetailsFragment.newInstance(Bundle().apply {
+                            putParcelable(DetailsFragment.BUNDLE_EXTRA, weather)
+                        }))
+                        .addToBackStack("")
+                        .commitAllowingStateLoss()
             }
         }
     })
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater,
+                              container: ViewGroup?,
+                              savedInstanceState: Bundle?): View {
         _binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -60,13 +58,13 @@ class MainFragment : Fragment() {
     }
 
     private fun changeWeatherDataSet() =
-        if (isDataSetRus) {
-            viewModel.getWeatherFromLocalSourceWorld()
-            binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
-        } else {
-            viewModel.getWeatherFromLocalSourceRus()
-            binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
-        }.also { isDataSetRus = !isDataSetRus }
+            if (isDataSetRus) {
+                viewModel.getWeatherFromLocalSourceWorld()
+                binding.mainFragmentFAB.setImageResource(R.drawable.ic_earth)
+            } else {
+                viewModel.getWeatherFromLocalSourceRus()
+                binding.mainFragmentFAB.setImageResource(R.drawable.ic_russia)
+            }.also { isDataSetRus = !isDataSetRus }
 
 
     private fun renderData(appState: AppState) {
@@ -81,8 +79,8 @@ class MainFragment : Fragment() {
             is AppState.Error -> {
                 binding.mainFragmentLoadingLayout.visibility = View.GONE
                 binding.mainFragmentRootView.showSnackbar(
-                    getString(R.string.error), getString(R.string.reload),
-                    { viewModel.getWeatherFromLocalSourceRus() })
+                        getString(R.string.error), getString(R.string.reload),
+                        { viewModel.getWeatherFromLocalSourceRus() })
             }
         }
     }
@@ -102,10 +100,9 @@ class MainFragment : Fragment() {
 }
 
 private fun View.showSnackbar(
-    text: String,
-    actionText: String,
-    action: (View) -> Unit,
-    length: Int = Snackbar.LENGTH_INDEFINITE
-) {
+        text: String,
+        actionText: String,
+        action: (View) -> Unit,
+        length: Int = Snackbar.LENGTH_INDEFINITE) {
     Snackbar.make(this, text, length).setAction(actionText, action).show()
 }
