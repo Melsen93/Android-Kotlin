@@ -1,9 +1,6 @@
-package com.example.androidonkotlin.view.details
+package com.example.androidonkotlin.viewdetails
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,67 +8,26 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.androidonkotlin.R
 import com.example.androidonkotlin.databinding.FragmentDetailsBinding
-import com.example.androidonkotlin.model.FactDTO
 import com.example.androidonkotlin.model.Weather
-import com.example.androidonkotlin.model.WeatherDTO
-
-const val DETAILS_INTENT_FILTER = "DETAILS INTENT FILTER"
-const val DETAILS_LOAD_RESULT_EXTRA = "LOAD RESULT"
-const val DETAILS_INTENT_EMPTY_EXTRA = "INTENT IS EMPTY"
-const val DETAILS_DATA_EMPTY_EXTRA = "DATA IS EMPTY"
-const val DETAILS_RESPONSE_EMPTY_EXTRA = "RESPONSE IS EMPTY"
-const val DETAILS_REQUEST_ERROR_EXTRA = "REQUEST ERROR"
-const val DETAILS_REQUEST_ERROR_MESSAGE_EXTRA = "REQUEST ERROR MESSAGE"
-const val DETAILS_URL_MALFORMED_EXTRA = "URL MALFORMED"
-const val DETAILS_RESPONSE_SUCCESS_EXTRA = "RESPONSE SUCCESS"
-const val DETAILS_TEMP_EXTRA = "TEMPERATURE"
-const val DETAILS_FEELS_LIKE_EXTRA = "FEELS LIKE"
-const val DETAILS_CONDITION_EXTRA = "CONDITION"
-private const val TEMP_INVALID = -100
-private const val FEELS_LIKE_INVALID = -100
-private const val PROCESS_ERROR = "Обработка ошибки"
+import com.example.androidonkotlin.utils.showSnackBar
+import com.example.androidonkotlin.viewmodel.AppState
+import com.example.androidonkotlin.viewmodel.DetailsViewModel
+import com.github.twocoffeesoneteam.glidetovectoryou.GlideToVectorYou
+import com.squareup.picasso.Picasso
 
 class DetailsFragment : Fragment() {
 
     private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
     private lateinit var weatherBundle: Weather
-
-    private val loadResultsReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.getStringExtra(DETAILS_LOAD_RESULT_EXTRA)) {
-                DETAILS_INTENT_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
-                DETAILS_DATA_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
-                DETAILS_RESPONSE_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
-                DETAILS_REQUEST_ERROR_EXTRA -> TODO(PROCESS_ERROR)
-                DETAILS_REQUEST_ERROR_MESSAGE_EXTRA -> TODO(PROCESS_ERROR)
-                DETAILS_URL_MALFORMED_EXTRA -> TODO(PROCESS_ERROR)
-                DETAILS_RESPONSE_SUCCESS_EXTRA -> renderData(
-                    WeatherDTO(
-                        FactDTO(
-                            intent.getIntExtra(DETAILS_TEMP_EXTRA, TEMP_INVALID),
-                            intent.getIntExtra(DETAILS_FEELS_LIKE_EXTRA, FEELS_LIKE_INVALID),
-                            intent.getStringExtra(DETAILS_CONDITION_EXTRA)
-                        )
-                    )
-                )
-                else -> TODO(PROCESS_ERROR)
-            }
-        }
+    private val viewModel: DetailsViewModel by lazy {
+        ViewModelProvider(this).get(DetailsViewModel::class.java)
     }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        context?.let {
-            LocalBroadcastManager.getInstance(it).registerReceiver(
-                loadResultsReceiver,
-                IntentFilter(DETAILS_INTENT_FILTER)
-            )
-        }
-    }
+    private lateinit var chosenHeaderPicture: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -84,60 +40,118 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         weatherBundle = arguments?.getParcelable(BUNDLE_EXTRA) ?: Weather()
-        getWeather()
+        viewModel.detailsLiveData.observe(viewLifecycleOwner, Observer {
+            renderData(it)
+        })
+        viewModel.getWeatherFromRemoteSource(weatherBundle.city.lat, weatherBundle.city.lon)
     }
 
-    private fun getWeather() {
-        with(binding) {
-            mainView.visibility = View.GONE
-            loadingLayout.visibility = View.VISIBLE
-        }
-        context?.let {
-            it.startService(Intent(it, WeatherLoaderService::class.java).apply {
-                putExtra(LATITUDE_EXTRA, weatherBundle.city.lat)
-                putExtra(LONGITUDE_EXTRA, weatherBundle.city.lon)
-            })
-        }
-    }
-
-    private fun renderData(weatherDTO: WeatherDTO) {
-        binding.mainView.visibility = View.VISIBLE
-        binding.loadingLayout.visibility = View.GONE
-
-        val fact = weatherDTO.fact
-        val temp = fact!!.temp
-        val feelsLike = fact.feels_like
-        val condition = fact.condition
-        if (temp == TEMP_INVALID || feelsLike == FEELS_LIKE_INVALID || condition == null) {
-            TODO(PROCESS_ERROR)
-        } else {
-            val city = weatherBundle.city
-            with(binding) {
-                cityName.text = city.cityName
-                cityCoordinates.text = String.format(
-                    getString(R.string.city_coordinates),
-                    city.lat.toString(), city.lon.toString()
-                )
-                weatherCondition.text = condition
-                temperatureValue.text = temp.toString()
-                feelsLikeValue.text = feelsLike.toString()
+    private fun renderData(appState: AppState) {
+        when (appState) {
+            is AppState.Success -> {
+                binding.mainView.visibility = View.VISIBLE
+                binding.loadingLayout.visibility = View.GONE
+                setWeather(appState.weatherData[0])
+            }
+            is AppState.Loading -> {
+                binding.mainView.visibility = View.GONE
+                binding.loadingLayout.visibility = View.VISIBLE
+            }
+            is AppState.Error -> {
+                binding.mainView.visibility = View.VISIBLE
+                binding.loadingLayout.visibility = View.GONE
+                binding.mainView.showSnackBar(
+                    getString(R.string.error),
+                    getString(R.string.reload),
+                    {
+                        viewModel.getWeatherFromRemoteSource(
+                            weatherBundle.city.lat,
+                            weatherBundle.city.lon
+                        )
+                    })
             }
         }
     }
 
-    private fun displayWeather(weatherDTO: WeatherDTO) {
+    private fun setWeather(weather: Weather) {
         with(binding) {
-            mainView.visibility = View.VISIBLE
-            loadingLayout.visibility = View.GONE
             val city = weatherBundle.city
             cityName.text = city.cityName
             cityCoordinates.text = String.format(
                 getString(R.string.city_coordinates),
-                city.lat.toString(), city.lon.toString()
+                city.lat.toString(),
+                city.lon.toString()
             )
-            weatherCondition.text = weatherDTO.fact?.condition
-            temperatureValue.text = weatherDTO.fact?.temp.toString()
-            feelsLikeValue.text = weatherDTO.fact?.feels_like.toString()
+            temperatureValue.text = weather.temperature.toString()
+            feelsLikeValue.text = weather.feelsLike.toString()
+            weatherCondition.text = weather.condition
+
+            weather.icon?.let {
+                GlideToVectorYou.justLoadImage(
+                    activity,
+                    Uri.parse("https://yastatic.net/weather/i/icons/blueye/color/svg/${it}.svg"),
+                    weatherIcon
+                )
+            }
+
+            getHeaderPicture(city.cityName)
+            Picasso
+                .get()
+                .load(chosenHeaderPicture)
+                .into(headerIcon)
+        }
+    }
+
+    private fun getHeaderPicture(cityName: String) {
+        when (cityName) {
+            "Москва" -> chosenHeaderPicture = "https://freepngimg.com/download/temple/" +
+                    "93582-building-basils-moscow-petersburg-saint-landmark-cathedral.png"
+            "Санкт-Петербург" -> chosenHeaderPicture =
+                "https://e7.pngegg.com/pngimages/170/463/png-" +
+                        "clipart-saint-petersburg-skyline-silhouette-animals-building-thumbnail.png"
+            "Новосибирск" -> chosenHeaderPicture = "https://sun9-28.userapi.com/" +
+                    "4hHJFGDn8MIZhkqZZgxc7RR0Z7l1MYuif9djrQ/UHnmoOXypso.jpg"
+            "Екатеринбург" -> chosenHeaderPicture = "https://unipo.ru/assets/cache/images/" +
+                    "ekb1-540x250-1c0.png"
+            "Нижний Новгород" -> chosenHeaderPicture = "https://russouvenirs.ru/files/tovar/" +
+                    "3000_3100/3062/025-10f-76k21_anons.jpg"
+            "Казань" -> chosenHeaderPicture = "https://skazka-deti.ru/upload/iblock/6c0/" +
+                    "6c02cb5c2904889f17b2667261953223.jpg"
+            "Челябинск" -> chosenHeaderPicture = "https://bezopasnost112.ru/wp-content/uploads/" +
+                    "2020/07/12bb932701244df7827bb8c6fbfeeef0-330x206.jpg"
+            "Омск" -> chosenHeaderPicture = "https://argonek55.ru/wp-content/uploads/2019/01/" +
+                    "cropped-1233-768x204.png"
+            "Ростов-на-Дону" -> chosenHeaderPicture =
+                "https://zalog124.ru/wp-content/uploads/2018/" +
+                        "06/zaimpodnedvij-768x203.jpg"
+            "Хабаровск" -> chosenHeaderPicture = "https://www.todaykhv.ru/upload/resized/6b8/" +
+                    "6b8e94d8f21cf0169af1ab0e56a88c86.jpg"
+            "Лондон" -> chosenHeaderPicture =
+                "https://1.bp.blogspot.com/-zI_fpKSz44s/XnIXHJH3fWI/" +
+                        "AAAAAAAAAPQ/cSuEIBVjAzoP7uwizmonBxwbD7NT6MDDwCLcBGAsYHQ/s320/big-ben-clipart-14.png"
+            "Токио" -> chosenHeaderPicture = "https://png.pngitem.com/pimgs/s/" +
+                    "139-1399802_tokyo-japan-aljanh-tokyo-skyline-with-grey-buildings.png"
+            "Париж" -> chosenHeaderPicture = "https://c7.hotpng.com/preview/170/693/168/eiffel-" +
+                    "tower-arc-de-triomphe-belxe9m-tower-wallpaper-eiffel-tower-in-paris-three-" +
+                    "thumbnail.jpg"
+            "Берлин" -> chosenHeaderPicture =
+                "https://secure.meetupstatic.com/photos/event/8/d/f/5/" +
+                        "600_475296341.jpeg"
+            "Рим" -> chosenHeaderPicture = "https://w7.pngwing.com/pngs/363/138/png-transparent-" +
+                    "colosseum-roman-forum-pantheon-amphitheatrum-castrense-amphitheater-scenic-" +
+                    "colosseum-building-medieval-architecture-rome-thumbnail.png"
+            "Минск" -> chosenHeaderPicture = "https://prometr.by/upload/medialibrary/3a2/" +
+                    "3a2f4e848c7bdfe2998ef2f87f6658e6.jpg"
+            "Стамбул" -> chosenHeaderPicture = "https://www.pngkey.com/png/detail/" +
+                    "160-1607821_open-istanbul-vector-png.png"
+            "Вашингтон" -> chosenHeaderPicture =
+                "https://w7.pngwing.com/pngs/92/441/png-transparent" +
+                        "-united-states-capitol-dome-capitol-records-building-texas-state-capitol-united" +
+                        "-states-congress-hill-building-united-states-landmark-thumbnail.png"
+            "Киев" -> chosenHeaderPicture = "https://www.touropia.com/gfx/b/2019/10/" +
+                    "ukraine_places-350x200.jpg"
+            "Пекин" -> chosenHeaderPicture =
+                "https://img.lovepik.com/element/40038/9227.png_300.png"
         }
     }
 
@@ -149,13 +163,6 @@ class DetailsFragment : Fragment() {
             fragment.arguments = bundle
             return fragment
         }
-    }
-
-    override fun onDestroy() {
-        context?.let {
-            LocalBroadcastManager.getInstance(it).unregisterReceiver(loadResultsReceiver)
-        }
-        super.onDestroy()
     }
 
     override fun onDestroyView() {

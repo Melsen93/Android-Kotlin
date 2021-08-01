@@ -3,8 +3,8 @@ package com.example.androidonkotlin.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.androidonkotlin.model.Repository
-import com.example.androidonkotlin.model.RepositoryImpl
+import com.example.androidonkotlin.repository.Repository
+import com.example.androidonkotlin.repository.RepositoryImpl
 import java.lang.Thread.sleep
 
 class MainViewModel(
