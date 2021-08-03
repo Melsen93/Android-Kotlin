@@ -4,6 +4,7 @@ plugins {
 
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 30
@@ -46,6 +47,9 @@ android {
 }
 
 dependencies {
+    //Room
+    implementation 'androidx.room:room-runtime:2.2.6'
+    kapt 'androidx.room:room-compiler:2.2.6'
     //Picasso
     implementation 'com.squareup.picasso:picasso:2.71828'
     //GlideToVectorYou

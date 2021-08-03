@@ -8,4 +8,5 @@
     <string name="moscow">Москва</string>
     <string name="Khabarovsk">Хабаровск</string>
     <string name="server_connection_error">Не удалось установить соединение с сервером</string>
+    <string name="menu_title_history">History</string>
 </resources>
