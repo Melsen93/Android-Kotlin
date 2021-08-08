@@ -10,6 +10,7 @@ import com.example.androidonkotlin.R
 import com.example.androidonkotlin.view.contacts.ContentProviderFragment
 import com.example.androidonkotlin.view.history.HistoryFragment
 import com.example.androidonkotlin.view.main.MainFragment
+import com.example.androidonkotlin.view.maps.GoogleMapsFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,6 +52,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 true
             }
+            R.id.menu_google_maps -> {
+                supportFragmentManager.apply {
+                    beginTransaction()
+                        .add(R.id.container, GoogleMapsFragment())
+                        .addToBackStack("")
+                        .commitAllowingStateLoss()
+                }
+                true
+            }
+
             else -> return super.onOptionsItemSelected(item)
         }
     }
