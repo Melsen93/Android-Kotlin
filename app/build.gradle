@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.androidonkotlin"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -47,6 +47,8 @@ android {
 }
 
 dependencies {
+    //GoogleMaps Services
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
     //Room
     implementation 'androidx.room:room-runtime:2.2.6'
     kapt 'androidx.room:room-compiler:2.2.6'

@@ -14,6 +14,7 @@ import com.example.androidonkotlin.R
 import com.example.androidonkotlin.databinding.FragmentDetailsBinding
 import com.example.androidonkotlin.model.City
 import com.example.androidonkotlin.model.Weather
+import com.example.androidonkotlin.utils.getHeaderPicture
 import com.example.androidonkotlin.utils.showSnackBar
 import com.example.androidonkotlin.viewmodel.AppState
 import com.example.androidonkotlin.viewmodel.DetailsViewModel
@@ -96,7 +97,7 @@ class DetailsFragment : Fragment() {
                 )
             }
 
-            getHeaderPicture(city.cityName)
+            chosenHeaderPicture = getHeaderPicture(city.cityName)
             Picasso
                 .get()
                 .load(chosenHeaderPicture)
@@ -113,59 +114,6 @@ class DetailsFragment : Fragment() {
                 weather.condition
             )
         )
-    }
-
-    private fun getHeaderPicture(cityName: String) {
-        when (cityName) {
-            "Москва" -> chosenHeaderPicture = "https://freepngimg.com/download/temple/" +
-                    "93582-building-basils-moscow-petersburg-saint-landmark-cathedral.png"
-            "Санкт-Петербург" -> chosenHeaderPicture =
-                "https://e7.pngegg.com/pngimages/170/463/png-" +
-                        "clipart-saint-petersburg-skyline-silhouette-animals-building-thumbnail.png"
-            "Новосибирск" -> chosenHeaderPicture = "https://sun9-28.userapi.com/" +
-                    "4hHJFGDn8MIZhkqZZgxc7RR0Z7l1MYuif9djrQ/UHnmoOXypso.jpg"
-            "Екатеринбург" -> chosenHeaderPicture = "https://unipo.ru/assets/cache/images/" +
-                    "ekb1-540x250-1c0.png"
-            "Нижний Новгород" -> chosenHeaderPicture = "https://russouvenirs.ru/files/tovar/" +
-                    "3000_3100/3062/025-10f-76k21_anons.jpg"
-            "Казань" -> chosenHeaderPicture = "https://skazka-deti.ru/upload/iblock/6c0/" +
-                    "6c02cb5c2904889f17b2667261953223.jpg"
-            "Челябинск" -> chosenHeaderPicture = "https://bezopasnost112.ru/wp-content/uploads/" +
-                    "2020/07/12bb932701244df7827bb8c6fbfeeef0-330x206.jpg"
-            "Омск" -> chosenHeaderPicture = "https://argonek55.ru/wp-content/uploads/2019/01/" +
-                    "cropped-1233-768x204.png"
-            "Ростов-на-Дону" -> chosenHeaderPicture =
-                "https://zalog124.ru/wp-content/uploads/2018/" +
-                        "06/zaimpodnedvij-768x203.jpg"
-            "Хабаровск" -> chosenHeaderPicture = "https://www.todaykhv.ru/upload/resized/6b8/" +
-                    "6b8e94d8f21cf0169af1ab0e56a88c86.jpg"
-            "Лондон" -> chosenHeaderPicture =
-                "https://1.bp.blogspot.com/-zI_fpKSz44s/XnIXHJH3fWI/" +
-                        "AAAAAAAAAPQ/cSuEIBVjAzoP7uwizmonBxwbD7NT6MDDwCLcBGAsYHQ/s320/big-ben-clipart-14.png"
-            "Токио" -> chosenHeaderPicture = "https://png.pngitem.com/pimgs/s/" +
-                    "139-1399802_tokyo-japan-aljanh-tokyo-skyline-with-grey-buildings.png"
-            "Париж" -> chosenHeaderPicture = "https://c7.hotpng.com/preview/170/693/168/eiffel-" +
-                    "tower-arc-de-triomphe-belxe9m-tower-wallpaper-eiffel-tower-in-paris-three-" +
-                    "thumbnail.jpg"
-            "Берлин" -> chosenHeaderPicture =
-                "https://secure.meetupstatic.com/photos/event/8/d/f/5/" +
-                        "600_475296341.jpeg"
-            "Рим" -> chosenHeaderPicture = "https://w7.pngwing.com/pngs/363/138/png-transparent-" +
-                    "colosseum-roman-forum-pantheon-amphitheatrum-castrense-amphitheater-scenic-" +
-                    "colosseum-building-medieval-architecture-rome-thumbnail.png"
-            "Минск" -> chosenHeaderPicture = "https://prometr.by/upload/medialibrary/3a2/" +
-                    "3a2f4e848c7bdfe2998ef2f87f6658e6.jpg"
-            "Стамбул" -> chosenHeaderPicture = "https://www.pngkey.com/png/detail/" +
-                    "160-1607821_open-istanbul-vector-png.png"
-            "Вашингтон" -> chosenHeaderPicture =
-                "https://w7.pngwing.com/pngs/92/441/png-transparent" +
-                        "-united-states-capitol-dome-capitol-records-building-texas-state-capitol-united" +
-                        "-states-congress-hill-building-united-states-landmark-thumbnail.png"
-            "Киев" -> chosenHeaderPicture = "https://www.touropia.com/gfx/b/2019/10/" +
-                    "ukraine_places-350x200.jpg"
-            "Пекин" -> chosenHeaderPicture =
-                "https://img.lovepik.com/element/40038/9227.png_300.png"
-        }
     }
 
     companion object {
